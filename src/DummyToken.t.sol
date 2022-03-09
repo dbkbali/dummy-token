@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import {DSTest} from "ds-test/test.sol";
+import {ForwardProxy} from "forward-proxy/ForwardProxy.sol";
 import {DummyToken} from "./DummyToken.sol";
 
 interface Hevm {
@@ -22,11 +23,13 @@ contract DummyTokenTest is DSTest {
 
     Hevm internal hevm;
 
+    ForwardProxy internal notOwner;
     DummyToken internal token;
 
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
 
+        notOwner = new ForwardProxy();
         token = new DummyToken("Dummy", "DUMMY");
     }
 
@@ -44,5 +47,15 @@ contract DummyTokenTest is DSTest {
 
         assertEq(token.totalSupply(), 50 ether);
         assertEq(token.balanceOf(address(this)), 50 ether);
+    }
+
+    function testFailCannotMintIfIsNotOwner() public {
+        DummyToken(notOwner._(address(token))).mint(address(notOwner), 100);
+    }
+
+    function testFailCannotBurnIfIsNotOwner() public {
+        token.mint(address(notOwner), 100 ether);
+
+        DummyToken(notOwner._(address(token))).burn(address(notOwner), 50);
     }
 }
