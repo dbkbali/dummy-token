@@ -13,7 +13,14 @@ update:; dapp update
 build:; dapp build
 test-remote: check-api-key; dapp test --rpc-url $(call alchemy-url,goerli) # --ffi # enable if you need the `ffi` cheat code on HEVM
 test-local:; ETH_RPC_URL='http://localhost:8545' dapp test --rpc  # --ffi # enable if you need the `ffi` cheat code on HEVM
+
+# deploy
 flatten:; hevm flatten --source-file ${file} --json-file out/dapp.sol.json
+
+TOKEN_NAME := "Dummy Token"
+TOKEN_SYMBOL := "DUMMY"
+TOKEN_DECIMALS := 18
+deploy: check-api-key; dapp create --rpc-url $(call alchemy-url,goerli) DummyToken '${TOKEN_NAME}' '${TOKEN_SYMBOL}' ${TOKEN_DECIMALS}
 
 check-api-key:
 ifndef ALCHEMY_API_KEY
